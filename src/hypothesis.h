@@ -1,5 +1,5 @@
 /*
- *  ATracker 
+ *  ATracker
  *  Copyright 2017 Andrea Pennisi
  *
  *  This file is part of AT and it is distributed under the terms of the
@@ -45,29 +45,29 @@
 
 using namespace ATracker::costs;
 
-namespace ATracker 
+namespace ATracker
 {
-  class Hyphothesis
-  {
-    private:
-      typedef std::shared_ptr<Track> Track_ptr;
-      typedef std::vector<Track_ptr> Tracks;
-    public:
-      static std::shared_ptr<Hyphothesis> instance();
-      void new_hyphothesis(const cv::Mat& dummmy_assignments, Tracks& tracks, const Detections& detections, const uint& w, const uint& h,
-	const uint& new_hyp_dummy_costs, Detections& prev_unassigned, const KalmanParam& param);
-    private:
-      static std::shared_ptr<Hyphothesis> m_instance;
-    private:
-      // 15 sig. digits for 0<=real(z)<=171
-      // coeffs should sum to about g*g/2+23/24	
+	class Hyphothesis
+	{
+	private:
+		typedef std::shared_ptr<Track> Track_ptr;
+		typedef std::vector<Track_ptr> Tracks;
+	public:
+		static std::shared_ptr<Hyphothesis> instance();
+		void new_hyphothesis(const cv::Mat& dummmy_assignments, Tracks& tracks, const Detections& detections, const uint& w, const uint& h,
+			const uint& new_hyp_dummy_costs, Detections& prev_unassigned, const KalmanParam& param);
+	private:
+		static std::shared_ptr<Hyphothesis> m_instance;
+	private:
+		// 15 sig. digits for 0<=real(z)<=171
+		// coeffs should sum to about g*g/2+23/24	
 		const static float g;// = 4.7422;
 		const static float sq2pi;// = 2.5066282746310005024157652848110;
-    private:
-      Hyphothesis() { ; }
-      float beta_likelihood(const cv::Point2f& prev_unassigned, const float& alpha, const float& beta, const uint& w, const uint& h);
-      float gamma(const float& z);
-  };
+	private:
+		Hyphothesis() { ; }
+		float beta_likelihood(const cv::Point2f& prev_unassigned, const float& alpha, const float& beta, const uint& w, const uint& h);
+		float gamma(const float& z);
+	};
 }
 
 #endif

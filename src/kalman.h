@@ -1,5 +1,5 @@
 /*
- *  ATracker 
+ *  ATracker
  *  Copyright 2017 Andrea Pennisi
  *
  *  This file is part of AT and it is distributed under the terms of the
@@ -35,53 +35,53 @@
 #include "utils.h"
 namespace ATracker
 {
-    class KalmanFilter
-    {
-      public:
-	  KalmanFilter() {;}
-	  KalmanFilter(const float &_x, const float &_y, const float &_w, const float &_h, const float &dt);
-	  inline cv::KalmanFilter kf()
-	  {
-	      return KF;
-	  }
+	class KalmanFilter
+	{
+	public:
+		KalmanFilter() { ; }
+		KalmanFilter(const float &_x, const float &_y, const float &_w, const float &_h, const float &dt);
+		inline cv::KalmanFilter kf()
+		{
+			return KF;
+		}
 
-	  cv::Mat predict();
-	  cv::Mat correct(const int &_x, const int &_y, const int& _w, const int& _h);
-	  cv::Mat getPrediction()
-	  {
-	    return prediction;
-	  }
-	  const cv::Mat B() const
-	  {
-	    return KF.controlMatrix;
-	  }
-	  const cv::Mat P() const
-	  {
-	    return KF.errorCovPre;
-	  }
-	  const cv::Mat S() const
-	  {
-	    return KF.errorCovPre(cv::Rect(0, 0, 2, 2)) + KF.measurementNoiseCov;
-	  }
-	  const cv::Size getSize()
-	  {
-	      return cv::Size(w, h);
-	  }
-	  const void setDt(const float& dt)
-	  {
-	    KF.transitionMatrix.at<float>(2) = dt;
-	    KF.transitionMatrix.at<float>(7) = dt;
-	  }
+		cv::Mat predict();
+		cv::Mat correct(const int &_x, const int &_y, const int& _w, const int& _h);
+		cv::Mat getPrediction()
+		{
+			return prediction;
+		}
+		const cv::Mat B() const
+		{
+			return KF.controlMatrix;
+		}
+		const cv::Mat P() const
+		{
+			return KF.errorCovPre;
+		}
+		const cv::Mat S() const
+		{
+			return KF.errorCovPre(cv::Rect(0, 0, 2, 2)) + KF.measurementNoiseCov;
+		}
+		const cv::Size getSize()
+		{
+			return cv::Size(w, h);
+		}
+		const void setDt(const float& dt)
+		{
+			KF.transitionMatrix.at<float>(2) = dt;
+			KF.transitionMatrix.at<float>(7) = dt;
+		}
 
-      private:
-	  //the kalman filter
-	  cv::KalmanFilter KF;
-	  cv::Mat_<float> measurement;
-	  cv::Mat processNoise;
-	  cv::Mat_<float> state;
-	  cv::Mat prediction;
-	  uint w, h;
-    };
+	private:
+		//the kalman filter
+		cv::KalmanFilter KF;
+		cv::Mat_<float> measurement;
+		cv::Mat processNoise;
+		cv::Mat_<float> state;
+		cv::Mat prediction;
+		uint w, h;
+	};
 
 }
 

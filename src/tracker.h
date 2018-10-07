@@ -1,5 +1,5 @@
 /*
- *  ATracker 
+ *  ATracker
  *  Copyright 2017 Andrea Pennisi
  *
  *  This file is part of AT and it is distributed under the terms of the
@@ -47,61 +47,62 @@
 
 namespace ATracker
 {
-  typedef std::shared_ptr<Entity> Entity_ptr;
-  typedef std::vector<Entity_ptr> Entities;
-      
-  class Tracker
-  {
-    friend class Entity;
-    friend class Track;
-    friend class GroupTrack;
-    
-    private:
-      typedef std::shared_ptr<Track> Track_ptr;
-      typedef std::vector<Track_ptr> Tracks;
-      typedef std::shared_ptr<GroupTrack> Group_ptr;
-      typedef std::vector<Group_ptr> Groups;
-    public:
-      Tracker(const KalmanParam& _param);
-      void track(Detections& _detections, const int& w, const int& h, cv::Mat& img);
-    public:
-      inline const void setSize(const uint& _w, const uint& _h)
-      {
-	width = _w;
-	height = _h;
-      }
-      const void evolveTracks()
-      {
-	for(const auto& track : single_tracks)
+	typedef std::shared_ptr<Entity> Entity_ptr;
+	typedef std::vector<Entity_ptr> Entities;
+
+	class Tracker
 	{
-	  track->predict();
-	}
-	for(const auto& group : groups)
-	{
-	  group->predict();
-	}
-      }
-      const Entities getTracks();
-    private:
-      cv::Mat associate_tracks(const Detections& _detections);
-      void update_tracks(const cv::Mat& assigments, const Detections& _detections);
-      void delete_tracks();
-      void detect_occlusions(const cv::Mat& img);
-      bool overlapRoi(const cv::Rect &_r1, const cv::Rect &_r2, const float& percentage);
-      void check_multiple_detections(cv::Mat& assigments, const cv::Mat& costs);
-      Detections manage_groups(const Detections& _detections, cv::Mat& img);
-    private:
-      KalmanParam param;
-      Detections last_detection;
-      Detections prev_unassigned;
-      Tracks single_tracks;
-      Groups groups;
-      Entities tracks;
-      uint width, height;
-      cv::RNG rng;
-      uint trackIds;
-      float time;
-  };
+		friend class Entity;
+		friend class Track;
+		friend class GroupTrack;
+
+	private:
+		typedef std::shared_ptr<Track> Track_ptr;
+		typedef std::vector<Track_ptr> Tracks;
+		typedef std::shared_ptr<GroupTrack> Group_ptr;
+		typedef std::vector<Group_ptr> Groups;
+	public:
+		Tracker(const KalmanParam& _param);
+		void track(Detections& _detections, const int& w, const int& h, cv::Mat& img);
+	public:
+		inline const void setSize(const uint& _w, const uint& _h)
+		{
+			width = _w;
+			height = _h;
+		}
+		//½øÐÐÔ¤²â
+		const void evolveTracks()
+		{
+			for (const auto& track : single_tracks)
+			{
+				track->predict();
+			}
+			for (const auto& group : groups)
+			{
+				group->predict();
+			}
+		}
+		const Entities getTracks();
+	private:
+		cv::Mat associate_tracks(const Detections& _detections);
+		void update_tracks(const cv::Mat& assigments, const Detections& _detections);
+		void delete_tracks();
+		void detect_occlusions(const cv::Mat& img);
+		bool overlapRoi(const cv::Rect &_r1, const cv::Rect &_r2, const float& percentage);
+		void check_multiple_detections(cv::Mat& assigments, const cv::Mat& costs);
+		Detections manage_groups(const Detections& _detections, cv::Mat& img);
+	private:
+		KalmanParam param;
+		Detections last_detection;
+		Detections prev_unassigned;
+		Tracks single_tracks;
+		Groups groups;
+		Entities tracks;
+		uint width, height;
+		cv::RNG rng;
+		uint trackIds;
+		float time;
+	};
 }
 
 #endif

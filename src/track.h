@@ -1,5 +1,5 @@
 /*
- *  ATracker 
+ *  ATracker
  *  Copyright 2017 Andrea Pennisi
  *
  *  This file is part of AT and it is distributed under the terms of the
@@ -41,62 +41,62 @@
 
 namespace ATracker
 {
-  class Track : public Entity
-  {
-    friend class GroupTrack;
-    friend class Tracker;
-    
-    public:
-      Track() { ; }
-      Track(const float& _x, const float& _y, const float& _w, const float& _h, const KalmanParam& _param);
-      const cv::Rect getRect();
-    protected:
-      const cv::Mat predict();
-      const cv::Mat correct(const float& _x, const float& _y, const float& _w, const float& _h);
-    protected:
-      bool operator==(const Track& _compare)
-      {
-	return m_label == _compare.label();
-      }
-      const uint nTimePropagation() const
-      {
-	return ntimes_propagated;
-      }
-       const cv::Mat getPrediction() const
-      {
-	return kf->getPrediction();
-      }
-      const cv::Point getPointPrediction() 
-      {
-	const cv::Mat& prediction = kf->getPrediction();
-	return cv::Point2f(prediction.at<float>(0), prediction.at<float>(1));
-      }
-      const cv::Point2f getPosition()
-      {
-	const cv::Mat& prediction = kf->getPrediction();
-        return cv::Point2f(prediction.at<float>(0), prediction.at<float>(1));
-      }
-      const double getTime() const
-      {
-          return time_in_sec;
-      }
-      const int label() const
-      {
-	return m_label;
-      }
-      void setLabel(const uint& _label)
-      {
-	m_label = _label;
-      }
-    private:
-      const std::string label2string();
-    private:
-      int m_label;
-      uint ntimes_propagated;
-      double time;
-      double time_in_sec;
-      uint ntime_missed;
-  };
+	class Track : public Entity
+	{
+		friend class GroupTrack;
+		friend class Tracker;
+
+	public:
+		Track() { ; }
+		Track(const float& _x, const float& _y, const float& _w, const float& _h, const KalmanParam& _param);
+		const cv::Rect getRect();
+	protected:
+		const cv::Mat predict();
+		const cv::Mat correct(const float& _x, const float& _y, const float& _w, const float& _h);
+	protected:
+		bool operator==(const Track& _compare)
+		{
+			return m_label == _compare.label();
+		}
+		const uint nTimePropagation() const
+		{
+			return ntimes_propagated;
+		}
+		const cv::Mat getPrediction() const
+		{
+			return kf->getPrediction();
+		}
+		const cv::Point getPointPrediction()
+		{
+			const cv::Mat& prediction = kf->getPrediction();
+			return cv::Point2f(prediction.at<float>(0), prediction.at<float>(1));
+		}
+		const cv::Point2f getPosition()
+		{
+			const cv::Mat& prediction = kf->getPrediction();
+			return cv::Point2f(prediction.at<float>(0), prediction.at<float>(1));
+		}
+		const double getTime() const
+		{
+			return time_in_sec;
+		}
+		const int label() const
+		{
+			return m_label;
+		}
+		void setLabel(const uint& _label)
+		{
+			m_label = _label;
+		}
+	private:
+		const std::string label2string();
+	private:
+		int m_label;
+		uint ntimes_propagated;
+		double time;
+		double time_in_sec;
+		uint ntime_missed;
+	};
 }
 
 #endif
