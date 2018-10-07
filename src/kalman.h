@@ -32,7 +32,7 @@
 #define KALMAN_H
 
 #include <opencv2/opencv.hpp>
-
+#include "utils.h"
 namespace ATracker
 {
     class KalmanFilter

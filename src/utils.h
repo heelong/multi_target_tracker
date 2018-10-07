@@ -35,7 +35,7 @@
 #include <memory>
 
 #include "detection.h"
-
+typedef unsigned int uint;
 using namespace ATracker;
 
 typedef std::vector<Detection> Detections;

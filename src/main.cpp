@@ -68,20 +68,20 @@ std::map<int, std::vector< std::vector< std::string > > > petsReading(const std:
 
 int main(int argc, char** argv)
 {
-  if(argc != 4)
-  {
-    std::cerr << "Usage: " << std::endl;
-    std::cout << "\t ./" << argv[0] << "detection_file_name.txt image_folder kalman_param.txt" << std::endl;
-  }
+  //if(argc != 4)
+  //{
+  //  std::cerr << "Usage: " << std::endl;
+  //  std::cout << "\t ./" << argv[0] << "detection_file_name.txt image_folder kalman_param.txt" << std::endl;
+  //}
   
-  std::map<int, std::vector< std::vector< std::string > > > detections = petsReading(argv[1]);
+  std::map<int, std::vector< std::vector< std::string > > > detections = petsReading("D:/Github/multi_target_tracker/PETS09-S2L1/detection.txt");
   cv::Mat image, imageClone, imageTracks;
   
   std::vector< std::vector < std::string > > curr;
-  ImageManager img(argv[2]);
-  std::string param_filename(argv[3]);
+  ImageManager img("D:/Github/multi_target_tracker/PETS09-S2L1/img1");
+
   ATracker::KalmanParam param;
-  param.read(param_filename);
+  param.read(std::string("D:/Github/multi_target_tracker/config/kalman_param.txt"));
   
   ATracker::Tracker tr(param);
   

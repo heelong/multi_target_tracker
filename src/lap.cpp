@@ -22,7 +22,7 @@
 using namespace ATracker::costs;
 
 std::shared_ptr<LapCost> LapCost::m_instance = nullptr;
-
+const int LapCost::BIG = std::numeric_limits<int>::max();
 std::shared_ptr< LapCost > LapCost::instance()
 {
   if(!m_instance)

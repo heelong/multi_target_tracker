@@ -16,7 +16,7 @@
 #include <limits>
 #include <time.h>
 #include <assert.h>
-
+#include "utils.h"
 typedef float track_t;
 typedef std::vector<int> assignments_t;
 typedef std::vector<track_t> distMatrix_t;

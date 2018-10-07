@@ -13,7 +13,8 @@ std::shared_ptr< Hyphothesis > Hyphothesis::instance()
   
   return m_instance;
 }
-
+const float Hyphothesis::g = 4.7422;
+const float Hyphothesis::sq2pi = 2.5066282746310005024157652848110;
 void Hyphothesis::new_hyphothesis(const cv::Mat& dummmy_assignments, Tracks& tracks, const Detections& detections, const uint& w, const uint& h, 
 				     const uint& new_hyp_dummy_costs, Detections& prev_unassigned, const KalmanParam& param)
 {
@@ -156,13 +157,18 @@ void Hyphothesis::new_hyphothesis(const cv::Mat& dummmy_assignments, Tracks& tra
   
   prev_unassigned.clear();
   const uint& dSize = detections.size();
+  int ass_sum_size = ass_sum.cols*ass_sum.rows;
   for(uint i = 0; i < dSize; ++i)
   {
-    if(ass_sum.at<int>(i) == 0 || 
-	(new_assignments.size() > 0 && std::find(new_assignments.begin(), new_assignments.end(), i) == new_assignments.end()))
+	if (i<ass_sum_size)
+    if(ass_sum.at<int>(i) == 0 )
     {
       prev_unassigned.push_back(detections.at(i));
     }
+	if((new_assignments.size() > 0) && std::find(new_assignments.begin(), new_assignments.end(), i) == new_assignments.end())
+	{
+		prev_unassigned.push_back(detections.at(i));
+	}
   }
   
  
@@ -181,7 +187,7 @@ float Hyphothesis::beta_likelihood(const cv::Point2f& prev_unassigned, const flo
   return likelihood_x * likelihood_y;
 }
 
-static std::vector<float> c =  {0.99999999999999709182, 57.156235665862923517, -59.597960355475491248,
+static std::vector<double> c =  {0.99999999999999709182, 57.156235665862923517, -59.597960355475491248,
 						14.136097974741747174, -0.49191381609762019978, .000033994649984811888699,
 						.000046523628927048575665, -.000098374475304879564677, .00015808870322491248884,
 						-.00021026444172410488319, .00021743961811521264320, -.00016431810653676389022,

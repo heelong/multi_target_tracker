@@ -141,7 +141,7 @@ void GroupTrack::analyze_associations(const Detections& _detections, const UIntV
   
   for(uint i = 0; i < assignments.size(); ++i)
   {
-    if(costs.at<float>(i, assignments[i]) <= 0.5 && assignments[i] != -1)
+	  if (assignments[i] != -1 && costs.at<float>(i, assignments[i]) <= 0.5)
       assigmentsBin.at<uchar>(i, assignments[i]) = 1;
   }
    

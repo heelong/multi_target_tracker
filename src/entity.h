@@ -116,7 +116,7 @@ namespace ATracker
       uint w, h;
       bool isgood;
     protected:
-      constexpr static uint history_size = 10;
+		const static uint history_size = 10;
   };
 }
 

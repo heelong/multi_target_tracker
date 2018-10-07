@@ -197,7 +197,7 @@ cv::Mat Tracker::associate_tracks(const Detections& _detections)
   
   for(uint i = 0; i < assignments.size(); ++i)
   {
-    if(costs.at<float>(i, assignments[i]) < 40 && assignments[i] != -1)
+	  if (assignments[i] != -1 && costs.at<float>(i, assignments[i]) < 40)
       assigmentsBin.at<uchar>(i, assignments[i]) = 1;
   }
   

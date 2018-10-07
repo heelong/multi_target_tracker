@@ -61,8 +61,8 @@ namespace ATracker
     private:
       // 15 sig. digits for 0<=real(z)<=171
       // coeffs should sum to about g*g/2+23/24	
-      constexpr static float g = 4.7422;
-      constexpr static float sq2pi=  2.5066282746310005024157652848110;
+		const static float g;// = 4.7422;
+		const static float sq2pi;// = 2.5066282746310005024157652848110;
     private:
       Hyphothesis() { ; }
       float beta_likelihood(const cv::Point2f& prev_unassigned, const float& alpha, const float& beta, const uint& w, const uint& h);

@@ -38,7 +38,7 @@ namespace ATracker
 	static std::shared_ptr<LapCost> m_instance;
 	LapCost() { ; }
       private:
-	constexpr static int BIG = std::numeric_limits<int>::max();
+		  const static int BIG;// = std::numeric_limits<int>::max();
 	
     };
 
