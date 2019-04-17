@@ -13,6 +13,7 @@ header file for Hungarian algorithm
 
 #include <vector>
 #include <iostream>
+#include <iomanip> 
 #include <limits>
 #include <time.h>
 #include <assert.h>
@@ -31,7 +32,7 @@ namespace ATracker
 			typedef std::vector<uint> BoolVec;
 		private:
 			// --------------------------------------------------------------------------
-			// Computes the optimal assignment (minimum overall costs) using Munkres algorithm.
+			// 通过匈牙利算法计算最小代价匹配.
 			// --------------------------------------------------------------------------
 			void assignmentoptimal(assignments_t& assignment, track_t& cost, const distMatrix_t& distMatrixIn, const size_t& nOfRows, const size_t& nOfColumns);
 			void buildassignmentvector(assignments_t& assignment, BoolVec& starMatrix, const size_t& nOfRows, const size_t& nOfColumns);
@@ -60,6 +61,15 @@ namespace ATracker
 
 		public:
 			AssignmentProblemSolver() { ; }
+			/**
+			 * \brief 
+			 * \param distMatrixIn 
+			 * \param nOfRows 轨迹的数目
+			 * \param nOfColumns 跟踪目标的数目
+			 * \param assignment 
+			 * \param Method 
+			 * \return 
+			 */
 			track_t Solve(const distMatrix_t& distMatrixIn, const size_t& nOfRows, const size_t& nOfColumns, assignments_t& assignment, const TMethod& Method = optimal);
 		};
 	}

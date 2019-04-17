@@ -33,7 +33,8 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 {
 	// Generate distance cv::Matrix 
 	// and check cv::Matrix elements positiveness :)
-
+	//if (nOfRows != nOfColumns)
+	std::cout << "行列不相等，轨迹：" << nOfRows << "    跟踪目标：" << nOfColumns << std::endl;
 	// Total elements number
 	const size_t& nOfElements = nOfRows * nOfColumns;
 	// Memory allocation
@@ -51,21 +52,22 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 	}
 
 	// Memory allocation
-	BoolVec coveredColumns(nOfColumns, 0);
-	BoolVec coveredRows(nOfRows, 0);
-	BoolVec starMatrix(nOfElements, 0);
+	BoolVec coveredColumns(nOfColumns, 0);//标记列中有0
+	BoolVec coveredRows(nOfRows, 0);//标记行中有0
+	BoolVec starMatrix(nOfElements, 0);//标记 行/列中第一个使该行/列被覆盖的元素
 	BoolVec primeMatrix(nOfElements, 0);
 	BoolVec newStarMatrix(nOfElements, 0); /* used in step4 */
 
 	/* preliminary steps */
-	if (nOfRows <= nOfColumns)
+	if (nOfRows <= nOfColumns)//行小于列
 	{
+		//std::cout << "跟踪目标多于轨迹" << std::endl;
 		track_t  minValue;
 		track_t* distMatrixTemp;
 		track_t* distMatrix_ptr = distMatrix.data();
 		for (size_t row = 0; row < nOfRows; row++)
 		{
-			/* find the smallest element in the row */
+			/* 找出每一行中值最小的元素 */
 			distMatrixTemp = distMatrix_ptr + row;
 			minValue = *distMatrixTemp;
 			distMatrixTemp += nOfRows;
@@ -78,7 +80,7 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 				}
 				distMatrixTemp += nOfRows;
 			}
-			/* subtract the smallest element from each element of the row */
+			/* 然后把该行所有元素都减去这一最小值 */
 			distMatrixTemp = distMatrix_ptr + row;
 			while (distMatrixTemp < distMatrixEnd)
 			{
@@ -86,7 +88,7 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 				distMatrixTemp += nOfRows;
 			}
 		}
-		/* Steps 1 and 2a */
+		/* Steps 1 and 2a，将所有包含0的列进行标记 */
 		for (size_t row = 0; row < nOfRows; row++)
 		{
 			for (size_t col = 0; col < nOfColumns; col++)
@@ -103,15 +105,16 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 			}
 		}
 	}
-	else /* if(nOfRows > nOfColumns) */
+	else /* if(nOfRows > nOfColumns) 行较多，以行为基准进行遍历*/
 	{
+		//std::cout << "跟踪目标少于轨迹" << std::endl;
 		track_t* distMatrixTemp;
 		track_t* columnEnd;
 		track_t  minValue;
 		track_t* distMatrix_ptr = distMatrix.data();
 		for (size_t col = 0; col < nOfColumns; col++)
 		{
-			/* find the smallest element in the column */
+			/*找出每一列中值最小的元素 */
 			distMatrixTemp = distMatrix_ptr + nOfRows*col;
 			columnEnd = distMatrixTemp + nOfRows;
 			minValue = *distMatrixTemp++;
@@ -125,7 +128,7 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 				}
 			}
 
-			/* subtract the smallest element from each element of the column */
+			/* 把该列中的每一个元素都减去该最小值 */
 			distMatrixTemp = distMatrix_ptr + nOfRows*col;
 			while (distMatrixTemp < columnEnd)
 			{
@@ -139,7 +142,7 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 			{
 				if (distMatrix[row + nOfRows*col] == 0)
 				{
-					if (!coveredRows[row])
+					if (!coveredRows[row])//判断当前行是否被覆盖过
 					{
 						starMatrix[row + nOfRows*col] = true;
 						coveredColumns[col] = true;
@@ -155,9 +158,15 @@ void AssignmentProblemSolver::assignmentoptimal(assignments_t& assignment, track
 			coveredRows[row] = false;
 		}
 	}
+	//for (int i = 0; i < nOfRows; i++)
+	//{
+	//	for (int j = 0; j < nOfColumns; j++)
+	//		std::cout << std::setw(10) << distMatrix[i + j*nOfRows] << "   ";
+	//	std::cout << std::setw(10) << std::endl;
+	//}
 	/* move to step 2b */
 	step2b(assignment, distMatrix, starMatrix, newStarMatrix, primeMatrix, coveredColumns, coveredRows, nOfRows, nOfColumns, (nOfRows <= nOfColumns) ? nOfRows : nOfColumns);
-	/* compute cost and remove invalid assignments */
+	/* 计算分配成本*/
 	computeassignmentcost(assignment, cost, distMatrixIn, nOfRows);
 
 	return;
@@ -173,7 +182,7 @@ void AssignmentProblemSolver::buildassignmentvector(assignments_t& assignment, B
 		{
 			if (starMatrix[row + nOfRows * col])
 			{
-				assignment[row] = static_cast<int>(col);
+				assignment[row] = static_cast<int>(col);//轨迹对应-》障碍物
 				break;
 			}
 		}
@@ -233,12 +242,12 @@ void AssignmentProblemSolver::step2b(assignments_t& assignment, distMatrix_t& di
 			nOfCoveredColumns++;
 		}
 	}
-	if (nOfCoveredColumns == minDim)
+	if (nOfCoveredColumns == minDim)//包含0的列数等于最小维数，则完成分配
 	{
 		/* algorithm finished */
 		buildassignmentvector(assignment, starMatrix, nOfRows, nOfColumns);
 	}
-	else
+	else//没有完成分类
 	{
 		/* move to step 3 */
 		step3(assignment, distMatrix, starMatrix, newStarMatrix, primeMatrix, coveredColumns, coveredRows, nOfRows, nOfColumns, minDim);
@@ -246,7 +255,7 @@ void AssignmentProblemSolver::step2b(assignments_t& assignment, distMatrix_t& di
 }
 
 // --------------------------------------------------------------------------
-//
+// 用尽量少的横线、竖线覆盖矩阵中的所有0
 // --------------------------------------------------------------------------
 void AssignmentProblemSolver::step3(assignments_t& assignment, distMatrix_t& distMatrix, BoolVec& starMatrix, BoolVec& newStarMatrix, BoolVec& primeMatrix, BoolVec& coveredColumns, BoolVec& coveredRows, const size_t& nOfRows, const size_t& nOfColumns, const size_t& minDim)
 {
@@ -254,17 +263,17 @@ void AssignmentProblemSolver::step3(assignments_t& assignment, distMatrix_t& dis
 	while (zerosFound)
 	{
 		zerosFound = false;
-		for (size_t col = 0; col < nOfColumns; col++)
+		for (size_t col = 0; col < nOfColumns; col++)//遍历列
 		{
-			if (!coveredColumns[col])
+			if (!coveredColumns[col])//列中有0
 			{
 				for (size_t row = 0; row < nOfRows; row++)
 				{
-					if ((!coveredRows[row]) && (distMatrix[row + nOfRows*col] == 0))
+					if ((!coveredRows[row]) && (distMatrix[row + nOfRows*col] == 0))//当前行中有0，且当前行、当前列距离为0
 					{
 						/* prime zero */
 						primeMatrix[row + nOfRows*col] = true;
-						/* find starred zero in current row */
+						/* 找到当前行中的第一个0 */
 						size_t starCol = 0;
 						for (; starCol < nOfColumns; starCol++)
 						{
@@ -301,14 +310,14 @@ void AssignmentProblemSolver::step3(assignments_t& assignment, distMatrix_t& dis
 void AssignmentProblemSolver::step4(assignments_t& assignment, distMatrix_t& distMatrix, BoolVec& starMatrix, BoolVec& newStarMatrix, BoolVec& primeMatrix, BoolVec& coveredColumns, BoolVec& coveredRows, const size_t& nOfRows, const size_t& nOfColumns, const size_t& minDim, const size_t& row, const size_t& col)
 {
 	const size_t& nOfElements = nOfRows * nOfColumns;
-	/* generate temporary copy of starMatrix */
+	/* 对 starMatrix 进行拷贝*/
 	for (size_t n = 0; n < nOfElements; n++)
 	{
 		newStarMatrix[n] = starMatrix[n];
 	}
 	/* star current zero */
 	newStarMatrix[row + nOfRows*col] = true;
-	/* find starred zero in current column */
+	/* 找到当前列的起始0*/
 	size_t starCol = col;
 	size_t starRow = 0;
 	for (; starRow < nOfRows; starRow++)
@@ -322,7 +331,7 @@ void AssignmentProblemSolver::step4(assignments_t& assignment, distMatrix_t& dis
 	{
 		/* unstar the starred zero */
 		newStarMatrix[starRow + nOfRows*starCol] = false;
-		/* find primed zero in current row */
+		/* 找到当前行中的第一个0 */
 		size_t primeRow = starRow;
 		size_t primeCol = 0;
 		for (; primeCol < nOfColumns; primeCol++)
@@ -334,7 +343,7 @@ void AssignmentProblemSolver::step4(assignments_t& assignment, distMatrix_t& dis
 		}
 		/* star the primed zero */
 		newStarMatrix[primeRow + nOfRows*primeCol] = true;
-		/* find starred zero in current column */
+		/* 找到当前列中的第一个0 */
 		starCol = primeCol;
 		for (starRow = 0; starRow < nOfRows; starRow++)
 		{
@@ -365,7 +374,7 @@ void AssignmentProblemSolver::step4(assignments_t& assignment, distMatrix_t& dis
 // --------------------------------------------------------------------------
 void AssignmentProblemSolver::step5(assignments_t& assignment, distMatrix_t& distMatrix, BoolVec& starMatrix, BoolVec& newStarMatrix, BoolVec& primeMatrix, BoolVec& coveredColumns, BoolVec& coveredRows, const size_t& nOfRows, const size_t& nOfColumns, const size_t& minDim)
 {
-	/* find smallest uncovered element h */
+	/* 从上一步中未被覆盖的元素中找到最小值 h */
 	float h = std::numeric_limits<track_t>::max();
 	for (size_t row = 0; row < nOfRows; row++)
 	{
@@ -384,7 +393,7 @@ void AssignmentProblemSolver::step5(assignments_t& assignment, distMatrix_t& dis
 			}
 		}
 	}
-
+	//给被覆盖的行上所有元素加上这一最小值
 	/* add h to each covered row */
 	for (size_t row = 0; row < nOfRows; row++)
 	{
@@ -396,7 +405,7 @@ void AssignmentProblemSolver::step5(assignments_t& assignment, distMatrix_t& dis
 			}
 		}
 	}
-
+	//给没被覆盖的列上的所有元素都减去最这一小值
 	/* subtract h from each uncovered column */
 	for (size_t col = 0; col < nOfColumns; col++)
 	{

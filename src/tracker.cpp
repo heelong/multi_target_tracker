@@ -1,4 +1,5 @@
 #include "tracker.h"
+#include <iomanip>
 
 using namespace ATracker;
 
@@ -8,15 +9,19 @@ Tracker::Tracker(const KalmanParam& _param)
 	rng = cv::RNG(12345);
 	trackIds = 1;
 }
-
+/*
+ * 考虑到2D的结果没有深度信息，重叠部分较多，轨迹分两种：1、组合轨迹；2、单轨迹
+ * 分两步分进行，首先处理组合轨迹内的检测结果，然后处理单轨迹的结果
+ */
 void Tracker::track(Detections& _detections, const int& w, const int& h, cv::Mat& img)
 {
 	evolveTracks();
+	groups.size();
 	const Detections& detections = manage_groups(_detections, img);
 
-	cv::Mat assigments = associate_tracks(detections);
+	cv::Mat assigments = associate_tracks(detections);//进行匹配
 
-	if (assigments.total() != 0)
+	if (assigments.total() != 0)//轨迹数不为0
 		Hyphothesis::instance()->new_hyphothesis(assigments, single_tracks, detections, w, h,
 		param.newhypdummycost(), prev_unassigned, param);
 	assigments.setTo(0, (assigments == 255));
@@ -37,12 +42,12 @@ void Tracker::track(Detections& _detections, const int& w, const int& h, cv::Mat
 	}
 }
 
-
+//处理组合轨迹内的检测，并返回非组合轨迹
 Detections Tracker::manage_groups(const Detections& _detections, cv::Mat& img)
 {
 	if (groups.size() > 0)
 	{
-		//CHECK TRACKS AND THE GROUPS
+		//CHECK TRACKS AND THE GROUPS检查单条轨迹与组合轨迹之间是否有重合，如果重合，则将单轨迹插入到组合轨迹中，并删除单轨迹
 		for (int i = single_tracks.size() - 1; i >= 0; --i)
 		{
 			if (!single_tracks.at(i)->isgood) continue;
@@ -57,7 +62,7 @@ Detections Tracker::manage_groups(const Detections& _detections, cv::Mat& img)
 				}
 			}
 		}
-
+		//检查组合轨迹之间的重合
 		//CHECK OVERLAPPING BETWEEN GROUPS
 		for (int i = groups.size() - 1; i > 0; --i)
 		{
@@ -73,6 +78,7 @@ Detections Tracker::manage_groups(const Detections& _detections, cv::Mat& img)
 		}
 
 		Detections detections;
+		//内联函数，判断检测结果是否在组合轨迹中
 		auto isInside = [](const cv::Rect& group, const cv::Rect& det)
 		{
 			int x_tl = fmax(group.x, det.x);
@@ -85,6 +91,7 @@ Detections Tracker::manage_groups(const Detections& _detections, cv::Mat& img)
 		std::vector<bool> checked(_detections.size(), false);
 
 		//CHECK IF THE DETECTION IS INSIDE THE GROUP
+		//检查检测结果是否在组合轨迹中
 		for (const auto& group : groups)
 		{
 			const cv::Rect& r = group->getRect();
@@ -103,11 +110,12 @@ Detections Tracker::manage_groups(const Detections& _detections, cv::Mat& img)
 			}
 			if (det_indices.size() > 0)
 			{
-				group->analyze_associations(_detections, det_indices, single_tracks, param, width, height, img);
+				group->analyze_associations(_detections, det_indices, single_tracks, param, width, height, img);//对组合轨迹内的检测结果进行配对
 			}
 		}
 
 		//CHECK GROUPS
+		//检查组合轨迹，当组合轨迹中没有轨迹时，删除组合轨迹，或当组合轨迹中只有一条轨迹时，将其并入单轨迹中
 		for (int i = groups.size() - 1; i >= 0; --i)
 		{
 			const auto& group = groups.at(i);
@@ -124,6 +132,7 @@ Detections Tracker::manage_groups(const Detections& _detections, cv::Mat& img)
 		}
 
 		//RETURN ONLY NOT ASSOCIATED DETECTIONS
+		//只返回不在组合轨迹中的检测结果
 		uint i = 0;
 		for (const auto& check : checked)
 		{
@@ -161,7 +170,9 @@ void Tracker::delete_tracks()
 	}
 }
 
-
+/*
+ * 关联检测结果与单轨迹
+ */
 cv::Mat Tracker::associate_tracks(const Detections& _detections)
 {
 	if (_detections.size() == 0) return cv::Mat();
@@ -176,13 +187,13 @@ cv::Mat Tracker::associate_tracks(const Detections& _detections)
 	//COMPUTE COSTS
 	const uint& tSize = single_tracks.size();
 	const uint& dSize = _detections.size();
-	for (uint i = 0; i < tSize; ++i)
+	for (uint i = 0; i < tSize; ++i)//列
 	{
 		mu = single_tracks.at(i)->getPrediction();
 		sigma = single_tracks.at(i)->S();
 		t = cv::Point2f(mu.at<float>(0), mu.at<float>(1));
 
-		for (uint j = 0; j < dSize; ++j)
+		for (uint j = 0; j < dSize; ++j)//行
 		{
 			cv::Mat detection(cv::Size(1, 2), CV_32FC1);
 			detection.at<float>(0) = _detections.at(j).x();
@@ -191,6 +202,12 @@ cv::Mat Tracker::associate_tracks(const Detections& _detections)
 			cost.at(i + j * single_tracks.size()) = costs.at<float>(i, j);
 		}
 	}
+	//for (int i = 0; i < tSize; i++)
+	//{
+	//	for (int j = 0; j < dSize; j++)
+	//		std::cout << std::setw(10) << cost[i + j*tSize] << "   ";
+	//	std::cout << std::setw(10) << std::endl;
+	//}
 
 	AssignmentProblemSolver APS;
 	APS.Solve(cost, single_tracks.size(), _detections.size(), assignments, AssignmentProblemSolver::optimal);
@@ -349,13 +366,13 @@ void Tracker::update_tracks(const cv::Mat& assigments, const Detections& _detect
 	{
 		for (uint j = 0; j < aCols; ++j)
 		{
-			if (assigments.at<uchar>(i, j) == uchar(1))
+			if (assigments.at<uchar>(i, j) == uchar(1))//对单轨迹进行跟新，
 			{
 				single_tracks.at(i)->correct(_detections.at(j).x(), _detections.at(j).y(), _detections.at(j).w(), _detections.at(j).h());
-				single_tracks.at(i)->ntime_missed = 0;
+				single_tracks.at(i)->ntime_missed = 0;//有对象匹配上了，其缺失值设为0
 				single_tracks.at(i)->setDt(dt);
 
-				if (single_tracks.at(i)->nTimePropagation() >= param.minpropagate() && !single_tracks.at(i)->isgood)
+				if (single_tracks.at(i)->nTimePropagation() >= param.minpropagate() && !single_tracks.at(i)->isgood)//轨迹还没有初始化且持续跟踪次数大于设定次数，对轨迹进行确认
 				{
 					single_tracks.at(i)->setLabel(trackIds++);
 
@@ -374,7 +391,7 @@ void Tracker::update_tracks(const cv::Mat& assigments, const Detections& _detect
 	{
 		if (ass_sum.at<int>(i) == 0)
 		{
-			single_tracks.at(i)->ntime_missed++;
+			single_tracks.at(i)->ntime_missed++;//
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *  ATracker 
+ *  ATracker
  *  Copyright 2017 Andrea Pennisi
  *
  *  This file is part of AT and it is distributed under the terms of the
@@ -42,68 +42,84 @@
 using namespace ATracker::costs;
 
 namespace ATracker
-{ 
-  class GroupTrack : public Entity
-  { 
-    friend class Tracker;
-    
-    private:
-      typedef std::shared_ptr<Track> Track_ptr;
-      typedef std::vector<Track_ptr> Tracks;
-      typedef std::shared_ptr<GroupTrack> Group_ptr;
-      typedef std::vector<Group_ptr> Groups;
-      typedef std::map<uint, cv::Mat> HistMap;
-    public:
-      GroupTrack() { ; }
-      GroupTrack(const Tracks& _tracks, const cv::Mat& img, const float& dt);
-    public:
-      const cv::Rect getRect()
-      {
-	return rect;
-      }
-    private:
-      const std::string label2string();
-      bool check(const Group_ptr& _group);
-      void merge(const Group_ptr& _group, const cv::Mat& img);
-      void analyze_associations(const Detections& _detections, const UIntVec& _indices, 
-				      Tracks& _tracks, const KalmanParam& _params, const uint& _width, 
-				      const uint& _height, const cv::Mat& img);
-      const cv::Mat predict();
-      void insert(const Track_ptr& track, const cv::Mat& img);
-    private:
-      void resetDetection()
-      {
-	detection = cv::Rect(0, 0, 0, 0);
-      }
-      void correct() 
-      {
-	kf->correct(detection.x + (detection.width >> 1), detection.y + detection.height, detection.width, detection.height);
-	rect = detection;
-      }
-      const uint size() const
-      {
-	return tracks.size();
-      }
-      
-      const Tracks getTracks() const
-      {
-	return tracks;
-      }
-      const UIntVec getLabels() const
-      {
-	return labels;
-      }
-    private:
-      UIntVec labels;
-      cv::Rect rect;
-      cv::Rect detection;
-      Tracks tracks;
-      HistMap trackHists;
-    private:
-      void updateRect(const cv::Rect& r);
-      bool overlapRoi(const cv::Rect &_r1, const cv::Rect &_r2);
-      cv::Mat computeHist(const cv::Mat& img);
-  };
+{
+	/*
+	 * The group track is simple, when 2 or more people are overlapping each other, I track those people 
+	 * as a group but maintaining the original state of the single track in order to assign the id when the tracks
+	 * become again single tracks.
+	 */
+	class GroupTrack : public Entity
+	{
+		friend class Tracker;
+
+	private:
+		typedef std::shared_ptr<Track> Track_ptr;
+		typedef std::vector<Track_ptr> Tracks;
+		typedef std::shared_ptr<GroupTrack> Group_ptr;
+		typedef std::vector<Group_ptr> Groups;
+		typedef std::map<uint, cv::Mat> HistMap;
+	public:
+		GroupTrack() { ; }
+		GroupTrack(const Tracks& _tracks, const cv::Mat& img, const float& dt);
+	public:
+		const cv::Rect getRect()
+		{
+			return rect;
+		}
+	private:
+		const std::string label2string();
+		bool check(const Group_ptr& _group);
+		void merge(const Group_ptr& _group, const cv::Mat& img);
+
+		/**
+		 * \brief 解决行人重叠的的问题，只在2D中存在该问题，在3D检测中，不会存在重叠的情况
+		 * \param _detections 检测结果
+		 * \param _indices 组合航迹中的检测结果
+		 * \param _tracks 单轨迹
+		 * \param _params 
+		 * \param _width 
+		 * \param _height 
+		 * \param img 
+		 */
+		void analyze_associations(const Detections& _detections, const UIntVec& _indices,
+			Tracks& _tracks, const KalmanParam& _params, const uint& _width,
+			const uint& _height, const cv::Mat& img);
+		const cv::Mat predict();
+		void insert(const Track_ptr& track, const cv::Mat& img);
+	private:
+		void resetDetection()
+		{
+			detection = cv::Rect(0, 0, 0, 0);
+		}
+		void correct()
+		{
+			kf->correct(detection.x + (detection.width >> 1), detection.y + detection.height, detection.width, detection.height);
+			rect = detection;
+		}
+		const uint size() const
+		{
+			return tracks.size();
+		}
+
+		const Tracks getTracks() const
+		{
+			return tracks;
+		}
+		const UIntVec getLabels() const
+		{
+			return labels;
+		}
+	private:
+		UIntVec labels;
+		cv::Rect rect;
+		cv::Rect detection;
+		Tracks tracks;   //组合轨迹中的单轨迹
+		HistMap trackHists;
+	private:
+		void updateRect(const cv::Rect& r);
+		bool overlapRoi(const cv::Rect &_r1, const cv::Rect &_r2);
+		cv::Mat computeHist(const cv::Mat& img);
+	};
 }
 
 #endif

@@ -81,7 +81,7 @@ void GroupTrack::updateRect(const cv::Rect& r)
 	}
 }
 
-void GroupTrack::analyze_associations(const Detections& _detections, const UIntVec& _indices,
+void GroupTrack::analyze_associations(const Detections& _detections, const UIntVec& _indices/*与在组合轨迹关联门内的障碍物*/,
 	Tracks& _tracks, const KalmanParam& _params, const uint& _width,
 	const uint& _height, const cv::Mat& img)
 {
